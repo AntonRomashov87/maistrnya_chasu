@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Майстерня Часу</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            transition: background 0.5s ease;
+        }
+
+        body.theme-boy {
+            background: linear-gradient(135deg, #667eea 0%, #5568d3 100%);
+        }
+
+        body.theme-girl {
+            background: linear-gradient(135deg, #ff69b4 0%, #ff1493 100%);
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 100%;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 3px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .sound-btn {
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .sound-btn.off {
+            background: #ccc;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 12px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .clock-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .clock-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            background: white;
+            border-radius: 50%;
+            border: 5px solid #667eea;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 12px;
+            touch-action: none;
+        }
+
+        .clock-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .hand {
+            position: absolute;
+            background: #667eea;
+            transform-origin: bottom center;
+            left: 50%;
+            bottom: 50%;
+            cursor: grab;
+            border-radius: 5px;
+            z-index: 5;
+            touch-action: none;
+        }
+
+        .hand.hour {
+            width: 5px;
+            height: 60px;
+            margin-left: -2.5px;
+            background: #667eea;
+        }
+
+        .hand.minute {
+            width: 4px;
+            height: 80px;
+            margin-left: -2px;
+            background: #764ba2;
+        }
+
+        .center-dot {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #667eea;
+            border-radius: 50%;
+            z-index: 10;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .time-display {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+            font-family: 'Courier New', monospace;
+            min-height: 28px;
+        }
+
+        .task-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .task-image {
+            width: 100%;
+            height: 140px;
+            background: linear-gradient(135deg, #f5f7ff 0%, #f0f4ff 100%);
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .task-image svg {
+            width: 90%;
+            height: 90%;
+        }
+
+        .task-info {
+            background: linear-gradient(135deg, #f5f7ff 0%, #f0f4ff 100%);
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .task-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 4px;
+        }
+
+        .task-hint {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .btn-check {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-check:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-check:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-next {
+            background: #f0f0f0;
+            color: #667eea;
+        }
+
+        .btn-next:hover {
+            background: #e0e0e0;
+        }
+
+        .feedback {
+            min-height: 40px;
+            text-align: center;
+            border-radius: 8px;
+            padding: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+
+        .feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .stats-bar {
+            background: #f0f0f0;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 8px;
+            font-size: 12px;
+            text-align: center;
+            color: #666;
+        }
+
+        .stats-bar strong {
+            color: #667eea;
+        }
+
+        .completed-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .completed-screen.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        #childName {
+            width: 100% !important;
+            padding: 12px !important;
+            border: 2px solid #667eea !important;
+            border-radius: 8px !important;
+            font-size: 16px !important;
+            text-align: center !important;
+            font-weight: 600 !important;
+            color: #667eea !important;
+            box-sizing: border-box !important;
+        }
+
+        #childName::placeholder {
+            color: #999 !important;
+        }
+
+        #childName:focus {
+            outline: none !important;
+            border-color: #764ba2 !important;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3) !important;
+        }
+
+        .completed-emoji {
+            font-size: 60px;
+            margin-bottom: 15px;
+            animation: bounce 0.6s ease infinite;
+        }
+
+        .completed-title {
+            font-size: 28px;
+            color: #667eea;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .completed-text {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .stats-panel {
+            background: #f5f7ff;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .stat-item {
+            font-size: 13px;
+            margin: 8px 0;
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .certificate-btn {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            width: 100%;
+            padding: 12px;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .certificate-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .btn-restart {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 100%;
+            padding: 12px;
+            font-size: 13px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .clock-container {
+                width: 180px;
+                height: 180px;
+            }
+
+            .title {
+                font-size: 24px;
+            }
+        }
+
+        .theme-selector {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .theme-selector.hidden {
+            display: none;
+        }
+
+        .theme-selector-card {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            animation: slideUp 0.5s ease;
+        }
+
+        .theme-selector-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .theme-selector-subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 40px;
+        }
+
+        .theme-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .theme-btn {
+            padding: 20px 40px;
+            border: none;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .theme-btn-boy {
+            background: linear-gradient(135deg, #667eea 0%, #5568d3 100%);
+            color: white;
+        }
+
+        .theme-btn-boy:hover {
+            transform: scale(1.08);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .theme-btn-girl {
+            background: linear-gradient(135deg, #ff69b4 0%, #ff1493 100%);
+            color: white;
+        }
+
+        .theme-btn-girl:hover {
+            transform: scale(1.08);
+            box-shadow: 0 10px 30px rgba(255, 105, 180, 0.4);
+        }
+
+        .theme-emoji {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Екран вибору теми -->
+    <div class="theme-selector" id="themeSelector">
+        <div class="theme-selector-card">
+            <div class="theme-emoji" id="themeEmoji">👦👧</div>
+            <div class="theme-selector-title">Вибери свою тему!</div>
+            <div class="theme-selector-subtitle">Синя для хлопців, рожева для дівчаток</div>
+            <div class="theme-buttons">
+                <button class="theme-btn theme-btn-boy" id="themeBoy">
+                    👦 Для хлопців
+                </button>
+                <button class="theme-btn theme-btn-girl" id="themeGirl">
+                    👧 Для дівчаток
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="title">⏰ Майстерня Часу</div>
+            <div class="subtitle">Допоможи Златі виставити правильний час!</div>
+            
+            <div class="controls">
+                <button class="sound-btn" id="musicBtn" title="Музика">🎵 Музика</button>
+                <button class="sound-btn" id="soundBtn" title="Звуки">🔊 Звуки</button>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text"><span id="currentTask">1</span> / <span id="totalTasks">24</span></div>
+        </div>
+
+        <div class="main-content">
+            <!-- Годинник -->
+            <div class="clock-section">
+                <div class="clock-container" id="clockContainer">
+                    <svg class="clock-face" viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="95" fill="white" stroke="#667eea" stroke-width="1.5"/>
+                        
+                        <!-- Цифри розташовані на колі радіусом 70 від центру -->
+                        <text x="100" y="32" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="bold" fill="#667eea">12</text>
+                        <text x="135" y="42" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#667eea">1</text>
+                        <text x="161" y="65" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#667eea">2</text>
+                        <text x="170" y="103" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#667eea">3</text>
+                        <text x="161" y="138" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#667eea">4</text>
+                        <text x="135" y="161" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#667eea">5</text>
+                        <text x="100" y="170" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="bold" fill="#667eea">6</text>
+                        <text x="65" y="161" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#667eea">7</text>
+                        <text x="39" y="138" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#667eea">8</text>
+                        <text x="30" y="103" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#667eea">9</text>
+                        <text x="39" y="65" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#667eea">10</text>
+                        <text x="65" y="42" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#667eea">11</text>
+                        
+                        <line x1="100" y1="10" x2="100" y2="20" stroke="#667eea" stroke-width="2"/>
+                        <line x1="100" y1="180" x2="100" y2="190" stroke="#667eea" stroke-width="2"/>
+                        <line x1="10" y1="100" x2="20" y2="100" stroke="#667eea" stroke-width="2"/>
+                        <line x1="180" y1="100" x2="190" y2="100" stroke="#667eea" stroke-width="2"/>
+                    </svg>
+                    <div class="hand hour" id="hourHand"></div>
+                    <div class="hand minute" id="minuteHand"></div>
+                    <div class="center-dot"></div>
+                </div>
+                <div class="time-display" id="timeDisplay">00:00</div>
+            </div>
+
+            <!-- Завдання -->
+            <div class="task-section">
+                <div id="normalView">
+                    <div class="task-image" id="taskImage">
+                        <span style="font-size: 80px;" id="taskEmoji">😴</span>
+                    </div>
+                    
+                    <div class="task-info">
+                        <div class="task-text" id="taskText">Злата снідає</div>
+                        <div class="task-hint" id="taskHint">Правильний час: --:--</div>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-check" id="checkBtn">Перевірити</button>
+                        <button class="btn btn-next" id="skipBtn">Пропустити</button>
+                    </div>
+
+                    <div class="feedback" id="feedback"></div>
+                    <div class="stats-bar">✓ Правильно: <strong id="correctCount">0</strong> | ✗ Помилки: <strong id="wrongCount">0</strong></div>
+                </div>
+
+                <div id="completedView" class="completed-screen">
+                    <div class="completed-emoji">🎉</div>
+                    <div class="completed-title">Вітаємо!</div>
+                    <div class="completed-text">Ти завершив "Майстерню Часу"!</div>
+                    
+                    <div class="stats-panel">
+                        <div class="stat-item">
+                            <div>Правильні відповіді</div>
+                            <div class="stat-number" id="finalCorrect">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div>Точність</div>
+                            <div class="stat-number" id="finalAccuracy">0%</div>
+                        </div>
+                    </div>
+
+                    <div style="background: white; border: 2px solid #667eea; border-radius: 10px; padding: 15px; margin-bottom: 15px;">
+                        <label style="display: block; text-align: center; margin-bottom: 10px; font-weight: 600; color: #667eea;">Введи своє ім'я для сертифіката:</label>
+                        <input type="text" id="childName" placeholder="Наприклад: Марія" style="width: 100%; padding: 10px; border: 2px solid #667eea; border-radius: 8px; font-size: 16px; text-align: center;">
+                    </div>
+
+                    <button class="btn certificate-btn" id="certificateBtn">📜 Отримати Сертифікат</button>
+                    <button class="btn btn-restart" id="restartBtn">Почати заново</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Canvas для сертифікату -->
+    <canvas id="certificateCanvas" style="display: none;"></canvas>
+
+    <script>
+        const tasks = [
+            // Ранок
+            { text: 'Злата прокидається', time: '07:00', range: 30, emoji: '😴' },
+            { text: 'Злата умивається', time: '07:15', range: 20, emoji: '🚿' },
+            { text: 'Злата снідає', time: '07:30', range: 30, emoji: '🥣' },
+            { text: 'Злата чистить зуби', time: '08:00', range: 20, emoji: '🪥' },
+            { text: 'Злата робить зарядку', time: '08:15', range: 20, emoji: '🏃' },
+            
+            // Школа
+            { text: 'Злата йде в школу', time: '08:45', range: 20, emoji: '🎒' },
+            { text: 'Злата вчиться в школі', time: '09:00', range: 60, emoji: '📚' },
+            { text: 'Злата їсть другий сніданок', time: '10:30', range: 20, emoji: '🍎' },
+            { text: 'Злата на уроці', time: '11:00', range: 30, emoji: '✏️' },
+            
+            // Обід
+            { text: 'Злата йде додому', time: '12:00', range: 30, emoji: '🏠' },
+            { text: 'Злата їсть обід', time: '12:30', range: 30, emoji: '🍽️' },
+            { text: 'Злата миє посуд', time: '13:00', range: 20, emoji: '🧼' },
+            
+            // Полудень
+            { text: 'Злата відпочиває', time: '13:30', range: 30, emoji: '🛋️' },
+            { text: 'Злата спить (денний сон)', time: '14:00', range: 45, emoji: '😴' },
+            { text: 'Злата прокидається', time: '15:00', range: 20, emoji: '🌅' },
+            
+            // Полудень-вечір
+            { text: 'Злата малює', time: '15:30', range: 30, emoji: '🎨' },
+            { text: 'Злата читає', time: '16:30', range: 30, emoji: '📖' },
+            { text: 'Злата гуляє на вулиці', time: '17:00', range: 60, emoji: '🚶' },
+            
+            // Вечір
+            { text: 'Злата займається шахами', time: '18:00', range: 30, emoji: '♟' },
+            { text: 'Злата їде вечерю', time: '19:00', range: 30, emoji: '🍜' },
+            { text: 'Злата дивиться мультик', time: '20:00', range: 30, emoji: '📺' },
+            { text: 'Злата проводить час з родиною', time: '20:30', range: 30, emoji: '👨‍👩‍👧' },
+            
+            // Ніч
+            { text: 'Злата миється перед сном', time: '20:45', range: 15, emoji: '🛁' },
+            { text: 'Злата йде спати', time: '21:00', range: 20, emoji: '🛏️' }
+        ];
+
+        let currentTaskIndex = 0;
+        let correctAnswers = 0;
+        let wrongAnswers = 0;
+        let isDragging = false;
+        let draggedHand = null;
+        let soundEnabled = true;
+        let musicEnabled = true;
+        let audioContext = null;
+
+        const hourHand = document.getElementById('hourHand');
+        const minuteHand = document.getElementById('minuteHand');
+        const clockContainer = document.getElementById('clockContainer');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const taskImage = document.getElementById('taskImage');
+        const taskText = document.getElementById('taskText');
+        const taskHint = document.getElementById('taskHint');
+        const checkBtn = document.getElementById('checkBtn');
+        const skipBtn = document.getElementById('skipBtn');
+        const feedback = document.getElementById('feedback');
+        const progressFill = document.getElementById('progressFill');
+        const currentTaskSpan = document.getElementById('currentTask');
+        const totalTasksSpan = document.getElementById('totalTasks');
+        const correctCountSpan = document.getElementById('correctCount');
+        const wrongCountSpan = document.getElementById('wrongCount');
+        const normalView = document.getElementById('normalView');
+        const completedView = document.getElementById('completedView');
+        const restartBtn = document.getElementById('restartBtn');
+        const certificateBtn = document.getElementById('certificateBtn');
+        const musicBtn = document.getElementById('musicBtn');
+        const soundBtn = document.getElementById('soundBtn');
+
+        totalTasksSpan.textContent = tasks.length;
+
+        // Web Audio API для звуків
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(frequency, duration) {
+            if (!soundEnabled || !audioContext) return;
+            
+            try {
+                const now = audioContext.currentTime;
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                osc.frequency.value = frequency;
+                osc.type = 'sine';
+                
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+                
+                osc.start(now);
+                osc.stop(now + duration);
+            } catch (e) {
+                console.log('Audio error:', e);
+            }
+        }
+
+        function playCorrectSound() {
+            playSound(523, 0.1); // C
+            setTimeout(() => playSound(659, 0.1), 100); // E
+            setTimeout(() => playSound(784, 0.2), 200); // G
+        }
+
+        function playWrongSound() {
+            playSound(300, 0.15);
+            setTimeout(() => playSound(250, 0.15), 150);
+        }
+
+        function startBackgroundMusic() {
+            if (!musicEnabled || !audioContext) return;
+            
+            try {
+                const now = audioContext.currentTime;
+                const notes = [262, 294, 330, 349]; // C, D, E, F
+                
+                const playNote = (freq, start, dur) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.frequency.value = freq;
+                    osc.type = 'sine';
+                    gain.gain.setValueAtTime(0.05, start);
+                    gain.gain.setValueAtTime(0.05, start + dur - 0.05);
+                    gain.gain.setValueAtTime(0, start + dur);
+                    osc.start(start);
+                    osc.stop(start + dur);
+                };
+                
+                // Простая мелодія
+                for (let i = 0; i < 8; i++) {
+                    playNote(notes[i % 4], now + (i * 0.5), 0.4);
+                }
+            } catch (e) {
+                console.log('Music error:', e);
+            }
+        }
+
+        function getClockPosition(e) {
+            const rect = clockContainer.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            let x, y;
+            if (e.touches) {
+                x = e.touches[0].clientX - centerX;
+                y = e.touches[0].clientY - centerY;
+            } else {
+                x = e.clientX - centerX;
+                y = e.clientY - centerY;
+            }
+            
+            let angle = Math.atan2(y, x) * 180 / Math.PI + 90;
+            if (angle < 0) angle += 360;
+            
+            return angle;
+        }
+
+        function updateTimeDisplay() {
+            let hourAngle = 0;
+            let minuteAngle = 0;
+            
+            const hourTransform = hourHand.style.transform;
+            const minuteTransform = minuteHand.style.transform;
+            
+            if (hourTransform) {
+                const match = hourTransform.match(/\d+/);
+                if (match) hourAngle = parseFloat(match[0]);
+            }
+            if (minuteTransform) {
+                const match = minuteTransform.match(/\d+/);
+                if (match) minuteAngle = parseFloat(match[0]);
+            }
+            
+            const hours = Math.round((hourAngle % 360) / 30) % 12;
+            const minutes = Math.round((minuteAngle % 360) / 6) % 60;
+            
+            const displayHours = String(hours === 0 ? 12 : hours).padStart(2, '0');
+            const displayMinutes = String(minutes).padStart(2, '0');
+            
+            timeDisplay.textContent = `${displayHours}:${displayMinutes}`;
+        }
+
+        // Миш события
+        hourHand.addEventListener('mousedown', () => {
+            initAudio();
+            isDragging = true;
+            draggedHand = 'hour';
+        });
+
+        minuteHand.addEventListener('mousedown', () => {
+            initAudio();
+            isDragging = true;
+            draggedHand = 'minute';
+        });
+
+        // Сенсорні события
+        hourHand.addEventListener('touchstart', (e) => {
+            initAudio();
+            e.preventDefault();
+            isDragging = true;
+            draggedHand = 'hour';
+        });
+
+        minuteHand.addEventListener('touchstart', (e) => {
+            initAudio();
+            e.preventDefault();
+            isDragging = true;
+            draggedHand = 'minute';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const angle = getClockPosition(e);
+            updateHandPosition(angle);
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            const angle = getClockPosition(e);
+            updateHandPosition(angle);
+        });
+
+        function updateHandPosition(angle) {
+            if (draggedHand === 'hour') {
+                const snappedAngle = Math.round(angle / 30) * 30;
+                hourHand.style.transform = `rotate(${snappedAngle}deg)`;
+            } else if (draggedHand === 'minute') {
+                const snappedAngle = Math.round(angle / 6) * 6;
+                minuteHand.style.transform = `rotate(${snappedAngle}deg)`;
+            }
+            updateTimeDisplay();
+        }
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            draggedHand = null;
+        });
+
+        document.addEventListener('touchend', () => {
+            isDragging = false;
+            draggedHand = null;
+        });
+
+        function loadTask() {
+            const task = tasks[currentTaskIndex];
+            taskText.textContent = task.text;
+            taskHint.textContent = `Правильний час: ${task.time}`;
+            document.getElementById('taskEmoji').textContent = task.emoji;
+            
+            hourHand.style.transform = 'rotate(0deg)';
+            minuteHand.style.transform = 'rotate(0deg)';
+            updateTimeDisplay();
+            
+            currentTaskSpan.textContent = currentTaskIndex + 1;
+            const progress = ((currentTaskIndex) / tasks.length) * 100;
+            progressFill.style.width = progress + '%';
+            
+            feedback.classList.remove('show');
+        }
+
+        function getTimeFromDisplay() {
+            const time = timeDisplay.textContent;
+            const [hours, minutes] = time.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+
+        function timeToMinutes(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+
+        function checkAnswer() {
+            const task = tasks[currentTaskIndex];
+            const userTime = getTimeFromDisplay();
+            let correctTimeStr = task.time;
+            
+            // Перетворюємо 24-годинний час на 12-годинний для порівняння
+            let [hours, minutes] = correctTimeStr.split(':').map(Number);
+            
+            // Якщо час > 12, перетворюємо на 12-годинний формат
+            if (hours > 12) {
+                hours = hours - 12;
+            } else if (hours === 0) {
+                hours = 12; // Полуніч
+            }
+            
+            const correctTime = hours * 60 + minutes;
+            const range = task.range;
+            
+            const isCorrect = Math.abs(userTime - correctTime) <= range / 2;
+            
+            feedback.classList.add('show');
+            
+            if (isCorrect) {
+                feedback.classList.add('correct');
+                feedback.classList.remove('incorrect');
+                feedback.innerHTML = '✓ Правильно!';
+                correctAnswers++;
+                playCorrectSound();
+            } else {
+                feedback.classList.add('incorrect');
+                feedback.classList.remove('correct');
+                const [h, m] = task.time.split(':');
+                feedback.innerHTML = `✗ Неправильно. Час: ${h}:${m}`;
+                wrongAnswers++;
+                playWrongSound();
+            }
+            
+            correctCountSpan.textContent = correctAnswers;
+            wrongCountSpan.textContent = wrongAnswers;
+            
+            setTimeout(nextTask, 1500);
+        }
+
+        function nextTask() {
+            currentTaskIndex++;
+            
+            if (currentTaskIndex >= tasks.length) {
+                showCompleted();
+                return;
+            }
+            
+            loadTask();
+        }
+
+        function showCompleted() {
+            normalView.style.display = 'none';
+            completedView.classList.add('show');
+            
+            const accuracy = Math.round((correctAnswers / tasks.length) * 100);
+            document.getElementById('finalCorrect').textContent = correctAnswers;
+            document.getElementById('finalAccuracy').textContent = accuracy + '%';
+            
+            // Фокус на поле для введення імені
+            setTimeout(() => {
+                document.getElementById('childName').focus();
+            }, 300);
+            
+            playCorrectSound();
+        }
+
+        function generateCertificate() {
+            const childName = document.getElementById('childName').value.trim();
+            
+            if (!childName) {
+                alert('Будь ласка, введи своє ім\'я!');
+                return;
+            }
+            
+            const canvas = document.getElementById('certificateCanvas');
+            canvas.width = 1200;
+            canvas.height = 800;
+            const ctx = canvas.getContext('2d');
+            
+            // Фон
+            ctx.fillStyle = '#f5e6d3';
+            ctx.fillRect(0, 0, 1200, 800);
+            
+            // Бордюр
+            ctx.strokeStyle = '#d4af37';
+            ctx.lineWidth = 8;
+            ctx.strokeRect(20, 20, 1160, 760);
+            
+            // Внутрішній бордюр
+            ctx.strokeStyle = '#d4af37';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(40, 40, 1120, 720);
+            
+            // ===== КРАСИВА МЕДАЛЬ ЗЛІВА =====
+            const medalX = 200;
+            const medalY = 180;
+            
+            // Стрічки (дві паралельні)
+            // Ліва стрічка (синя)
+            ctx.fillStyle = '#2E7FF1';
+            ctx.fillRect(medalX - 35, 40, 20, 140);
+            
+            // Права стрічка (золота)
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(medalX + 15, 40, 20, 140);
+            
+            // Зовнішній круг медалі (тінь)
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.beginPath();
+            ctx.arc(medalX, medalY, 65, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Основна медаль - зовнішній круг (золото)
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(medalX, medalY, 62, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Кільце медалі (темніше золото)
+            ctx.fillStyle = '#CC9A00';
+            ctx.beginPath();
+            ctx.arc(medalX, medalY, 62, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Внутрішня частина - біла
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(medalX, medalY, 58, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Радіальний градієнт ефект
+            const gradient = ctx.createLinearGradient(medalX - 30, medalY - 30, medalX + 30, medalY + 30);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.6)');
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(medalX, medalY, 55, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Маленький золотий круг в центрі
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(medalX, medalY, 45, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Внутрішній круг медалі
+            ctx.fillStyle = '#FFA500';
+            ctx.beginPath();
+            ctx.arc(medalX, medalY, 40, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Декоративний рисунок - велика зірка
+            ctx.fillStyle = '#FFD700';
+            ctx.font = 'bold 70px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('★', medalX, medalY);
+            
+            // Невеликі зірочки по краям
+            ctx.font = 'bold 20px Arial';
+            ctx.fillStyle = '#FFD700';
+            ctx.fillText('✦', medalX - 30, medalY - 15);
+            ctx.fillText('✦', medalX + 30, medalY - 15);
+            ctx.fillText('✦', medalX - 25, medalY + 25);
+            ctx.fillText('✦', medalX + 25, medalY + 25);
+            
+            // Золотий обідок медалі
+            ctx.strokeStyle = '#CC9A00';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(medalX, medalY, 58, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Край медалі
+            ctx.strokeStyle = '#FFD700';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(medalX, medalY, 62, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // ===== ГОДИННИК СПРАВА =====
+            // Годинник коло
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(1000, 200, 60, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(1000, 200, 55, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Цифри на годиннику
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText('12', 1000, 165);
+            ctx.fillText('3', 1050, 205);
+            ctx.fillText('6', 1000, 245);
+            ctx.fillText('9', 950, 205);
+            
+            // Стрілки годинника
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 3;
+            // Година
+            ctx.beginPath();
+            ctx.moveTo(1000, 200);
+            ctx.lineTo(1000, 160);
+            ctx.stroke();
+            
+            // Хвилини
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(1000, 200);
+            ctx.lineTo(1030, 200);
+            ctx.stroke();
+            
+            // Центральна точка
+            ctx.fillStyle = '#333';
+            ctx.beginPath();
+            ctx.arc(1000, 200, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // ===== ОСНОВНИЙ ТЕКСТ =====
+            // Заголовок
+            ctx.fillStyle = '#667eea';
+            ctx.font = 'bold 60px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText('СЕРТИФІКАТ', 600, 80);
+            
+            ctx.fillStyle = '#764ba2';
+            ctx.font = '32px Arial';
+            ctx.fillText('про завершення', 600, 160);
+            
+            // Основний текст
+            ctx.fillStyle = '#333';
+            ctx.font = '28px Arial';
+            ctx.fillText('Почесним вручається', 600, 290);
+            
+            // ІМ'Я ДИТИНИ (великим шрифтом)
+            ctx.fillStyle = '#667eea';
+            ctx.font = 'bold 48px Arial';
+            ctx.fillText(childName, 600, 370);
+            
+            // Текст після імені
+            ctx.fillStyle = '#333';
+            ctx.font = '24px Arial';
+            ctx.fillText('За успішне завершення курсу', 600, 440);
+            ctx.fillText('"Майстерня Часу"', 600, 480);
+            
+            // Статистика
+            ctx.font = '20px Arial';
+            ctx.fillText(`Правильні відповіді: ${correctAnswers} з ${tasks.length}`, 600, 550);
+            ctx.fillText(`Точність: ${Math.round((correctAnswers / tasks.length) * 100)}%`, 600, 590);
+            
+            // Дата
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('uk-UA');
+            ctx.font = '18px Arial';
+            ctx.fillStyle = '#666';
+            ctx.fillText(`Дата: ${dateStr}`, 600, 680);
+            
+            // Загальний дизайн - лінія
+            ctx.fillStyle = '#d4af37';
+            ctx.fillRect(300, 710, 600, 3);
+            
+            // Скачування
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Sertifikat_${childName}_Maistrnya_Chasu.png`;
+                a.click();
+            });
+        }
+
+        function restart() {
+            currentTaskIndex = 0;
+            correctAnswers = 0;
+            wrongAnswers = 0;
+            correctCountSpan.textContent = '0';
+            wrongCountSpan.textContent = '0';
+            normalView.style.display = 'block';
+            completedView.classList.remove('show');
+            themeSelector.classList.remove('hidden');
+        }
+
+        musicBtn.addEventListener('click', () => {
+            musicEnabled = !musicEnabled;
+            musicBtn.classList.toggle('off');
+            if (musicEnabled) {
+                startBackgroundMusic();
+            }
+        });
+
+        soundBtn.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            soundBtn.classList.toggle('off');
+        });
+
+        checkBtn.addEventListener('click', checkAnswer);
+        skipBtn.addEventListener('click', nextTask);
+        restartBtn.addEventListener('click', restart);
+        certificateBtn.addEventListener('click', generateCertificate);
+
+        // Обробники для вибору теми
+        const themeBoyBtn = document.getElementById('themeBoy');
+        const themeGirlBtn = document.getElementById('themeGirl');
+        const themeSelector = document.getElementById('themeSelector');
+
+        themeBoyBtn.addEventListener('click', () => {
+            document.body.classList.add('theme-boy');
+            document.body.classList.remove('theme-girl');
+            themeSelector.classList.add('hidden');
+            loadTask();
+            startBackgroundMusic();
+        });
+
+        themeGirlBtn.addEventListener('click', () => {
+            document.body.classList.add('theme-girl');
+            document.body.classList.remove('theme-boy');
+            themeSelector.classList.add('hidden');
+            loadTask();
+            startBackgroundMusic();
+        });
+
+        // Ініціалізація
+        // loadTask() тепер викликається після вибору теми
+        // startBackgroundMusic() тепер викликається після вибору теми
+    </script>
+</body>
+</html>
